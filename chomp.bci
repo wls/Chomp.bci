@@ -1,0 +1,142 @@
+00001 declare all integer*2
+00002 dim A(19,25)
+00010 print chr$(12);"CHOMP";tab(20);"(c)1988 Wizard Workshop and Company"
+00011 margin 0
+00020 print chr$(10)
+00021 let DEMO=0
+00030 linput bytes 1, prompt "Do you need the rules? ":R$
+00040 let R$=uprc$(R$)
+00045 print chr$(13);chr$(11);
+00050 if R$="Y" then 00160
+00060 goto 00360
+00160 let F=1
+00170 let R=5
+00180 let C=7
+00190 print chr$(12);"CHOMP is for 1 or more players (humans only)."
+00200 print
+00210 print "Here's how a board looks (this one 5 by 7):"
+00211 let DEMO=-1
+00212 gosub 00530
+00213 let DEMO=0
+00220 gosub 00610
+00240 print "The board is a big cookie - you specify the size at the start.  In the upper"
+00250 print "left corner of the cookie is a poison square (P).  The one who chomps the"
+00260 print "poison loses.  To take a chomp, type the row and column of one of the squares"
+00270 print "on the cookie.  All of the squares below and to the right of that square"
+00280 print "(including that square, too) disappear -- CHOMP!!";chr$(10)
+00290 print "No fair chomping squares that have already been chomped, or that are outside"
+00300 print "the original dimensions of the cookie.";chr$(10);"Here we go..."
+00360 let F=0
+00370 mat A=zer
+00380 print
+00381 enable handler RESM, resume at 00385
+00382 goto 00390
+00385 print "Illegal number specified."
+00390 linput prompt "How many players? ":P$
+00400 let P=int(abs(val(P$)))
+00401 if P<1 then 99999
+00410 let I1=0
+00411 enable handler RESM, resume at 00415
+00412 goto 00420
+00415 print "Illegal number specified."
+00420 input prompt "How many rows: ":R
+00430 let R=int(abs(R))
+00440 if R<1 then 99999
+00441 if R<=19 then 00470
+00450 print "Too many rows (19 is maximum).  Please try again."
+00451 goto 00420
+00460 print "Illegal number spcified."
+00470 linput prompt "How many columns: ":C$
+00471 enable handler RESM, resume at 00460
+00480 let C=int(abs(val(C$)))
+00481 if C<1 then 99999
+00482 disable handler
+00490 if C<=25 then 00530
+00500 print "Too many columns (25 is maximum).  Please try again."
+00510 goto 00470
+00530 if F=0 then print chr$(12);
+00550 mat A=con
+00590 let A(1,1)=-1
+00591 if DEMO<>0 then return
+00600 print chr$(8);"CHOMP";tab(70);time$;chr$(10)
+00610 print tab(5);
+00620 for I=1 to C
+00622   print str$(I);" ";
+00623   if C>9 and I<10 then print " ";
+00624 next I
+00625 print
+00630 for I=1 to R
+00640   print I;tab(5);
+00650   for J=1 to C
+00660     if A(I,J)=-1 then 00700
+00670     if A(I,J)=0 then 00720
+00680     print "* ";
+00681     if C>9 then print " ";
+00690     goto 00710
+00700     print "P ";
+00701     if C>9 then print " ";
+00710   next J
+00720   print chr$(11)
+00730 next I
+00740 print
+00750 if F=0 then 00770
+00760 return
+00770 let I1=I1+1
+00790 let P1=I1-int(I1/P)*P
+00800 if P1<>0 then 00820
+00810 let P1=P
+00820 print tab(50,1);"Player ";P1;
+00830 print tab(1,23);"Coordinates of CHOMP (Row,Column)";chr$(11);
+00840 linput prompt ": ":R$
+00841 let R$=ltrm$(rtrm$(uprc$(R$)))
+00842 if R$="" then
+00843   print chr$(12);
+00844   let F=1
+00845   gosub 00600
+00846   let F=0
+00847   goto 00820
+00849 end if
+00850 let I=pos(R$,",")
+00851 if I=0 then
+00852   print tab(1,24);chr$(11);"Please specify as ROW, comma, then COLUMN";
+00853   goto 00820
+00854 end if
+00855 let R1$=R$(1:I-1)
+00856 let C1$=R$(I+1:len(R$))
+00857 let R1$=ltrm$(rtrm$(R1$))
+00858 let C1$=ltrm$(rtrm$(C1$))
+00859 if C1$="" then
+00860   print tab(1,24);chr$(11);"You forgot the column!";
+00861   goto 00830
+00862 end if
+00870 enable handler RESM, resume at 05030
+00871 let R1=val(R1$)
+00872 let C1=val(C1$)
+00875 disable handler
+00888 if R1<1 or R1>R or C1<1 or C1>C then 00920
+00890 if A(R1,C1)=0 then 00920
+00900 if A(R1,C1)=-1 then 01010
+00910 goto 00940
+00920 print tab(1,24);"NO FAIR!!! -- You're trying to CHOMP on an empty space!";
+00930 goto 00830
+00940 for I=R1 to R
+00950   for J=C1 to C
+00960     let A(I,J)=0
+00970   next J
+00980 next I
+00990 goto 00600
+01010 print tab(1,23);chr$(11);"You ate the poison, player ";P1;
+01020 print tab(50,2);chr$(14);"* LOSES *";chr$(15);
+01030 print tab(1,24);chr$(11);
+01040 linput noecho, prompt "Again? (Y/N)", bytes 1:R$
+01050 let R$=uprc$(R$(1:1))
+01060 if R$="Y" then 00360
+01070 print " No."
+01080 goto 99999
+05000 handler RESM
+05010   resume
+05011   print tab(1,24);chr$(11);"Illegal number specified.  Please try again.";
+05020 end handler
+05030 print tab(1,24);chr$(11);"Illegal number specified.  Please try again.";
+05040 goto 00830
+99999 end
